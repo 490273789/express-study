@@ -1,47 +1,18 @@
 const express = require('express')
 const app = express()
 const port = 5888
+const path = require('path')
+const staticRoot = path.resolve(__dirname, '../public')
+// 请求时，会根据路径，从指定的目录中寻找是否存在该文件，如果存在，直接响应文件内容，而不在移交给后续中间件
+// 如果不存在文件，则直接移交给后续处理
+// app.use(express.static(staticRoot))
+// 静态资源必须以static开头
+// 默认情况下，如果映射为目录，子会自动使用index.html,可以配置
+app.use('/static',express.static(staticRoot))
+app.use(express.urlencoded({extended: true}))
+app.use(require('./errorMiddlewarre'))
 
-app.get('/content',(req,res)=>{
-    // req和res是express封装后的对象
-    console.log('头部：',req.header)
-    console.log('路径：',req.path)
-    console.log('query：',req.query)
-    res.send('<h1>你好user</h1>')
-})
-
-// 中间件
-app.get('/handle',(req,res, next)=>{
-    console.log('handle1')
-    next()
-},(req,res, next)=>{
-    console.log('handle2')
-    res.send('<h1>你好user</h1>')
-    next()
-})
-app.get('/handle',(req,res)=>{
-    console.log('handle3')
-})
-
-// 动态路由
-app.get('/user/:id',(req,res)=>{
-    // 手动设置响应头
-    // res.setHeader('a', '123')
-    // res.send('<h1>你好user</h1>')
-    // res.status(302).header('location', 'https://www.baidu.com').end()
-    // res.status(302).location('https://www.baidu.com').end()
-    res.redirect(302,'https://www.baidu.com')
-})
-
-// 匹配所有get请求
-app.get('*',(req,res) => {
-    console.log('路径：',req.path)
-})
-
-// 匹配所有请求
-app.all(() => {
-    console.log('路径：',req.path)
-})
+app.use('/api/student/', require('./student/index'))
 
 app.listen(port, () => {
     console.log(`监听${port}`)
